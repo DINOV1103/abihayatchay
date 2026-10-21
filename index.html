@@ -1981,7 +1981,7 @@ body{
         <div class="wheel-teaser">
           <span class="gift" aria-hidden="true">🎁</span>
           <span data-e="form.teaser" data-e-label="Baraban haqida eslatma">Ариза юборгач, омад барабани очилади</span>
-          <span class="chips"><b class="c50">50%</b></span>
+          <span class="chips"><b class="c50">10–50%</b></span>
         </div>
 
         <form class="form" id="leadForm" novalidate>
@@ -2074,7 +2074,7 @@ body{
             <g id="bulbs"></g>
           </svg>
           <div class="disc" id="disc">
-            <svg viewBox="0 0 320 320" role="img" aria-label="Барабан: 20% ва 50% чегирма">
+            <svg viewBox="0 0 320 320" role="img" aria-label="Барабан: 10% дан 50% гача чегирма">
               <defs>
                 <linearGradient id="segGold" x1="0" y1="0" x2="1" y2="1">
                   <stop offset="0" stop-color="#FBE7AE" style="stop-color:var(--gold-4)"/>
@@ -2108,7 +2108,7 @@ body{
         <span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2.5v19M2.5 12h19M5.3 5.3l13.4 13.4M18.7 5.3L5.3 18.7" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg></span>
         <span class="btn-label" data-e="wheel.spin" data-e-label="Aylantirish tugmasi">Айлантириш</span>
       </button>
-      <p class="tiny">Ҳар бир иштирокчига 50% чегирма. Чегирма мутахассис қўнғироғи пайтида расмийлаштирилади.</p>
+      <p class="tiny">Ҳар бир иштирокчи 10% дан 50% гача чегирма ютади — миқдори тасодифий аниқланади. Чегирма мутахассис қўнғироғи пайтида расмийлаштирилади.</p>
     </div>
 
     <div class="step" id="stepWin">
@@ -2151,19 +2151,22 @@ body{
   'use strict';
 
   /* =====================================
-     OMAD BARABANI — faqat 20% va 50%
-       chance — tushish ehtimoli (nisbat).
-       Masalan 50/50 — teng; 70/30 — 20% ko‘proq tushadi.
+     OMAD BARABANI — chegirma TASODIFIY aniqlanadi
+       chance — tushish ehtimoli (nisbat, jami 100 bo‘lishi shart emas).
+       Hozir: 10% va 15% — ko‘p, 50% — kam tushadi.
+       Yangi foiz qo‘shsangiz, uni WHEEL ro‘yxatiga ham yozing.
   ===================================== */
 
-  /* Baraban har doim 50% da to‘xtaydi (20% — chance:0) */
   const PRIZES = [
-    { label:'20%', chance:0 },
-    { label:'50%', chance:100 }
+    { label:'10%', chance:25 },
+    { label:'15%', chance:25 },
+    { label:'20%', chance:25 },
+    { label:'30%', chance:15 },
+    { label:'50%', chance:10 }
   ];
 
-  /* Barabandagi 8 bo‘lak tartibi */
-  const WHEEL = ['50%', '20%', '50%', '20%', '50%', '20%', '50%', '20%'];
+  /* Barabandagi 8 bo‘lak tartibi (har bir foiz kamida bir marta bo‘lsin) */
+  const WHEEL = ['50%', '10%', '20%', '15%', '30%', '10%', '20%', '15%'];
 
   /* =====================================
      TELEGRAM — MUROJAATLAR SHU GURUHGA KELADI
@@ -2825,10 +2828,13 @@ body{
   const WC = 160;
   const WR = 144;
   const SEG = 360 / WHEEL.length;
-  const SEG_STYLE = {
-    '50%':[{ fill:'url(#segGold)', text:'#2B1F05', v:'--on-gold' }, { fill:'url(#segGold2)', text:'#2B1F05', v:'--on-gold' }],
-    '20%':[{ fill:'url(#segEm)', text:'#FFFFFF', v:'--on-dark' }, { fill:'url(#segEm2)', text:'#FFFFFF', v:'--on-dark' }]
-  };
+  /* Bo‘laklar navbat bilan: oltin, yashil, oltin, yashil… */
+  const SEG_STYLE = [
+    { fill:'url(#segGold)', text:'#2B1F05', v:'--on-gold' },
+    { fill:'url(#segEm)', text:'#FFFFFF', v:'--on-dark' },
+    { fill:'url(#segGold2)', text:'#2B1F05', v:'--on-gold' },
+    { fill:'url(#segEm2)', text:'#FFFFFF', v:'--on-dark' }
+  ];
 
   function svgEl(tag, attrs){
     const n = document.createElementNS(SVG_NS, tag);
@@ -2843,14 +2849,12 @@ body{
 
   (function buildWheel(){
     const segs = $('segs');
-    const seen = { '20%':0, '50%':0 };
-
     WHEEL.forEach(function(lab, i){
       const a0 = i * SEG;
       const a1 = (i + 1) * SEG;
       const p0 = wpt(a0, WR);
       const p1 = wpt(a1, WR);
-      const st = SEG_STYLE[lab][seen[lab]++ % 2];
+      const st = SEG_STYLE[i % SEG_STYLE.length];
 
       segs.appendChild(svgEl('path', {
         d:'M' + WC + ' ' + WC + ' L' + p0[0].toFixed(2) + ' ' + p0[1].toFixed(2) +
